@@ -1,39 +1,39 @@
 {
-  "name": "@solana/example-react-hooks",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "compile:js": "vite build",
-    "format": "biome check --write src",
-    "lint": "biome check src",
-    "test:typecheck": "tsc --noEmit",
-    "test": "vitest run --config ../../vitest.config.ts",
-    "typecheck": "pnpm test:typecheck"
-  },
-  "dependencies": {
-    "@solana/client-core": "workspace:*",
-    "@solana/react-hooks": "workspace:*",
-    "@solana/kit": "^5.0.0",
-    "@radix-ui/react-slot": "^1.1.0",
-    "class-variance-authority": "^0.7.0",
-    "clsx": "^2.1.1",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "tailwind-merge": "^2.5.2"
-  },
-  "devDependencies": {
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
-    "@vitejs/plugin-react-swc": "^4.2.0",
-    "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.41",
-    "tailwindcss": "^3.4.13",
-    "tailwindcss-animate": "^1.0.7",
-    "typescript": "^5.6.3",
-    "vite": "^7.1.12"
-  }
+	"name": "@solana/example-react-hooks",
+	"private": true,
+	"version": "0.0.0",
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build",
+		"preview": "vite preview",
+		"compile:js": "vite build",
+		"format": "biome check --write src",
+		"lint": "biome check src",
+		"test:typecheck": "tsc --noEmit",
+		"test": "vitest run --config ../../vitest.config.ts",
+		"typecheck": "pnpm test:typecheck"
+	},
+	"dependencies": {
+		"@solana/client-core": "workspace:*",
+		"@solana/react-hooks": "workspace:*",
+		"@solana/kit": "^5.0.0",
+		"@radix-ui/react-slot": "^1.1.0",
+		"class-variance-authority": "^0.7.0",
+		"clsx": "^2.1.1",
+		"react": "^19.0.0",
+		"react-dom": "^19.0.0",
+		"tailwind-merge": "^2.5.2"
+	},
+	"devDependencies": {
+		"@types/react": "^19.0.0",
+		"@types/react-dom": "^19.0.0",
+		"@vitejs/plugin-react-swc": "^4.2.0",
+		"autoprefixer": "^10.4.20",
+		"postcss": "^8.4.41",
+		"tailwindcss": "^3.4.13",
+		"tailwindcss-animate": "^1.0.7",
+		"typescript": "^5.6.3",
+		"vite": "^7.1.12"
+	}
 }

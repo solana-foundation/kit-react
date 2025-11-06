@@ -5,8 +5,8 @@ import type { ClientStore, SolanaClient, SolanaClientConfig, SolanaClientRuntime
 import { now } from '../utils';
 import { createWalletRegistry } from '../wallet/registry';
 import { createActions } from './actions';
-import { createClientStore, createInitialClientState } from './createClientStore';
 import { createClientHelpers } from './createClientHelpers';
+import { createClientStore, createInitialClientState } from './createClientStore';
 import { createWatchers } from './watchers';
 
 /**

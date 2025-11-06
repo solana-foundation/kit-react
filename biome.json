@@ -1,28 +1,31 @@
 {
-    "$schema": "https://biomejs.dev/schemas/2.3.4/schema.json",
-    "formatter": {
-        "enabled": true,
-        "lineWidth": 120,
-        "indentWidth": 4
-    },
-    "linter": {
-        "enabled": true,
-        "rules": {
-            "suspicious": {
-                "noUnknownAtRules": "off"
-            }
-        }
-    },
-    "javascript": {
-        "formatter": {
-            "quoteStyle": "single",
-            "indentWidth": 4,
-            "lineWidth": 120
-        }
-    },
-    "css": {
-        "parser": {
-            "tailwindDirectives": true
-        }
-    }
+	"$schema": "https://biomejs.dev/schemas/2.3.4/schema.json",
+	"formatter": {
+		"enabled": true,
+		"lineWidth": 120,
+		"indentWidth": 4
+	},
+	"files": {
+		"includes": ["**/*", "!!coverage", "!!**/.turbo", "!!**/dist"]
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"suspicious": {
+				"noUnknownAtRules": "off"
+			}
+		}
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "single",
+			"indentWidth": 4,
+			"lineWidth": 120
+		}
+	},
+	"css": {
+		"parser": {
+			"tailwindDirectives": true
+		}
+	}
 }

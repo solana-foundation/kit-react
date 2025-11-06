@@ -18,6 +18,7 @@ Thanks for your interest in helping! This project is an experimental Solana SDK,
 
 1. Create a feature branch from `main`.
 2. Run `pnpm format`, `pnpm lint`, `pnpm typecheck`, and `pnpm test` before submitting.
+   - A Husky pre-commit hook automatically runs `pnpm exec biome check --staged --no-errors-on-unmatched` so commits only land when Biome formatting and lint checks pass.
 3. Keep changes focused; open separate PRs for unrelated fixes.
 4. Write tests when adding or modifying functionality.
 5. Open a pull request with a clear summary and note any follow-up work.
