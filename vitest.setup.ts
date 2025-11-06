@@ -1,2 +1,2 @@
 // Shared Vitest setup for the Solana SDK workspace.
-export {};
+import '@testing-library/jest-dom/vitest';
