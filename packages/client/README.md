@@ -1,4 +1,4 @@
-# @solana/client-core
+# @solana/client
 
 Framework-agnostic building blocks for Solana RPC, subscriptions, wallets, and transactions. Works
 in any runtime (React, Svelte, API routes, workers, etc.).
@@ -8,13 +8,13 @@ in any runtime (React, Svelte, API routes, workers, etc.).
 ## Install
 
 ```bash
-pnpm add @solana/client-core
+pnpm add @solana/client
 ```
 
 ## Quick start
 
 ```ts
-import { createClient } from "@solana/client-core";
+import { createClient } from "@solana/client";
 
 const client = createClient({
   endpoint: "https://api.devnet.solana.com",

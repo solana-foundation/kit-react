@@ -6,7 +6,7 @@ The example mirrors the vanilla proof-of-concept by wiring wallet discovery, SOL
 
 ## Compute-unit tuned transactions
 
-`useTransactionPool` now exposes the same `prepareAndSend` helper that lives in `@solana/client-core`. You can surface compute-unit simulation plus logging in a single call:
+`useTransactionPool` now exposes the same `prepareAndSend` helper that lives in `@solana/client`. You can surface compute-unit simulation plus logging in a single call:
 
 ```tsx
 import { useMemo } from 'react';

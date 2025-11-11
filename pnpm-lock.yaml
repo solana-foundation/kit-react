@@ -53,9 +53,12 @@ importers:
       '@radix-ui/react-slot':
         specifier: ^1.1.0
         version: 1.2.4(@types/react@19.2.2)(react@19.2.0)
-      '@solana/client-core':
+      '@solana-program/system':
+        specifier: ^0.9.0
+        version: 0.9.0(@solana/kit@5.0.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(ws@8.18.3))
+      '@solana/client':
         specifier: workspace:*
-        version: link:../../packages/client-core
+        version: link:../../packages/client
       '@solana/kit':
         specifier: ^5.0.0
         version: 5.0.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(ws@8.18.3)
@@ -106,7 +109,7 @@ importers:
         specifier: ^7.1.12
         version: 7.1.12(@types/node@24.10.0)(jiti@1.21.7)
 
-  packages/client-core:
+  packages/client:
     dependencies:
       '@solana-program/compute-budget':
         specifier: ^0.9.0
@@ -160,9 +163,9 @@ importers:
       '@solana/addresses':
         specifier: ^5.0.0
         version: 5.0.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)
-      '@solana/client-core':
+      '@solana/client':
         specifier: workspace:*
-        version: link:../client-core
+        version: link:../client
       '@solana/codecs-core':
         specifier: ^5.0.0
         version: 5.0.0(typescript@5.9.3)

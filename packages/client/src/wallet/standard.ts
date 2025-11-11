@@ -72,7 +72,7 @@ function mapCommitment(commitment: unknown): CommitmentLike | undefined {
 }
 
 /**
- * Converts a Wallet Standard account into the @solana/client-core {@link WalletAccount} shape.
+ * Converts a Wallet Standard account into the @solana/client {@link WalletAccount} shape.
  *
  * @param walletAccount - Account provided by the wallet standard.
  * @returns Wallet account compatible with the client helpers.

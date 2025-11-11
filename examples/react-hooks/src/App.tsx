@@ -1,11 +1,27 @@
-import { createSolanaRpcClient, type SolanaClientConfig, type WalletConnector } from '@solana/client-core';
-import { SolanaClientProvider, useConnectWallet, useWallet, useWalletStandardConnectors } from '@solana/react-hooks';
+import { createSolanaRpcClient, type SolanaClientConfig, type WalletConnector } from '@solana/client';
+import {
+	SolanaClientProvider,
+	SolanaQueryProvider,
+	useConnectWallet,
+	useWallet,
+	useWalletStandardConnectors,
+} from '@solana/react-hooks';
 import { useEffect, useMemo, useRef } from 'react';
 
+import { AccountInspectorCard } from './components/AccountInspectorCard.tsx';
+import { AirdropCard } from './components/AirdropCard.tsx';
 import { BalanceCard } from './components/BalanceCard.tsx';
 import { ClusterStatusCard } from './components/ClusterStatusCard.tsx';
+import { LatestBlockhashCard } from './components/LatestBlockhashCard.tsx';
+import { ProgramAccountsCard } from './components/ProgramAccountsCard.tsx';
+import { SendTransactionCard } from './components/SendTransactionCard.tsx';
+import { SignatureWatcherCard } from './components/SignatureWatcherCard.tsx';
+import { SimulateTransactionCard } from './components/SimulateTransactionCard.tsx';
 import { SolTransferForm } from './components/SolTransferForm.tsx';
 import { SplTokenPanel } from './components/SplTokenPanel.tsx';
+import { StoreInspectorCard } from './components/StoreInspectorCard.tsx';
+import { TransactionPoolPanel } from './components/TransactionPoolPanel.tsx';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs.tsx';
 import { WalletControls } from './components/WalletControls.tsx';
 
 const LAST_CONNECTOR_STORAGE_KEY = 'solana:last-connector';
@@ -39,7 +55,9 @@ export default function App() {
 
 	return (
 		<SolanaClientProvider config={clientConfig}>
-			<DemoApp connectors={walletConnectors} />
+			<SolanaQueryProvider>
+				<DemoApp connectors={walletConnectors} />
+			</SolanaQueryProvider>
 		</SolanaClientProvider>
 	);
 }
@@ -107,17 +125,44 @@ function DemoApp({ connectors }: DemoAppProps) {
 					</span>
 					<h1>Solana Client Toolkit</h1>
 					<p>
-						This example wraps the headless <code>@solana/client-core</code> with a React context provider
-						and showcases the hooks exposed by <code>@solana/react-hooks</code>.
+						This example wraps the headless <code>@solana/client</code> with a React context provider and
+						showcases the hooks exposed by <code>@solana/react-hooks</code>. Explore state, transactions,
+						and query helpers via the tabs below.
 					</p>
 				</header>
-				<div className="grid gap-6 md:grid-cols-2">
-					<ClusterStatusCard />
-					<WalletControls connectors={connectors} />
-					<BalanceCard />
-					<SolTransferForm />
-					<SplTokenPanel />
-				</div>
+				<Tabs defaultValue="state">
+					<TabsList>
+						<TabsTrigger value="state">Wallet &amp; State</TabsTrigger>
+						<TabsTrigger value="transactions">Transfers &amp; Transactions</TabsTrigger>
+						<TabsTrigger value="queries">Queries &amp; Diagnostics</TabsTrigger>
+					</TabsList>
+					<TabsContent value="state">
+						<div className="grid gap-6 lg:grid-cols-2">
+							<ClusterStatusCard />
+							<WalletControls connectors={connectors} />
+							<BalanceCard />
+							<AccountInspectorCard />
+							<AirdropCard />
+							<StoreInspectorCard />
+						</div>
+					</TabsContent>
+					<TabsContent value="transactions">
+						<div className="grid gap-6 lg:grid-cols-2">
+							<SolTransferForm />
+							<SendTransactionCard />
+							<SplTokenPanel />
+							<TransactionPoolPanel />
+						</div>
+					</TabsContent>
+					<TabsContent value="queries">
+						<div className="grid gap-6 lg:grid-cols-2">
+							<LatestBlockhashCard />
+							<ProgramAccountsCard />
+							<SimulateTransactionCard />
+							<SignatureWatcherCard />
+						</div>
+					</TabsContent>
+				</Tabs>
 			</div>
 		</div>
 	);

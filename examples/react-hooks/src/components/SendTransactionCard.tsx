@@ -1,5 +1,7 @@
 import { lamportsMath } from '@solana/client';
-import { useSolTransfer, useWalletSession } from '@solana/react-hooks';
+import { address } from '@solana/kit';
+import { useSendTransaction, useWalletSession } from '@solana/react-hooks';
+import { getTransferSolInstruction } from '@solana-program/system';
 import { type FormEvent, useEffect, useState } from 'react';
 
 import { formatTransferFeedback } from './demoUi';
@@ -7,77 +9,73 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
 
-export function SolTransferForm() {
+export function SendTransactionCard() {
 	const session = useWalletSession();
-	const { send, status, signature, error, reset, isSending } = useSolTransfer();
-
+	const { error, isSending, reset, send, signature, status } = useSendTransaction();
 	const [destination, setDestination] = useState('');
-	const [amount, setAmount] = useState('0.01');
+	const [amount, setAmount] = useState('0.002');
 
 	useEffect(() => {
-		if (session) {
-			setDestination((current) => current || session.account.address.toString());
-		} else {
+		if (!session) {
 			setDestination('');
 		}
 	}, [session]);
 
-	useEffect(() => {
-		if (status === 'success') {
-			setAmount('0.01');
-		}
-	}, [status]);
-
 	const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
+		if (!session) {
+			return;
+		}
 		const target = destination.trim();
 		const amountInput = amount.trim();
 		if (!target || !amountInput) {
 			return;
 		}
 		const lamports = lamportsMath.fromSol(amountInput, { label: 'SOL amount' });
-		await send({
+		const instruction = getTransferSolInstruction({
 			amount: lamports,
-			destination: target,
+			destination: address(target),
+			source: session.account.address,
+		});
+		await send({
+			instructions: [instruction],
 		});
 	};
 
 	const feedback = formatTransferFeedback({ error, session, signature, status });
 
-	const isWalletConnected = Boolean(session);
-
 	return (
-		<Card aria-disabled={!isWalletConnected}>
+		<Card aria-disabled={!session}>
 			<CardHeader>
 				<div className="space-y-1.5">
-					<CardTitle>SOL Transfer</CardTitle>
+					<CardTitle>useSendTransaction</CardTitle>
 					<CardDescription>
-						The <code>useSolTransfer</code> hook wraps the underlying helper, manages status, and exposes
-						the latest signature so you only worry about form inputs.
+						Queue any instruction array and <code>useSendTransaction</code> handles prepare, signing, and
+						submission while exposing mutation status.
 					</CardDescription>
 				</div>
 			</CardHeader>
 			<CardContent>
 				<form className="grid gap-4" onSubmit={handleSubmit}>
-					<fieldset className="grid gap-4" disabled={!isWalletConnected}>
+					<fieldset disabled={!session}>
 						<div className="space-y-2">
-							<label htmlFor="sol-destination">Destination</label>
+							<label htmlFor="send-destination">Destination</label>
 							<Input
 								autoComplete="off"
-								id="sol-destination"
+								id="send-destination"
 								onChange={(event) => setDestination(event.target.value)}
 								placeholder="Recipient address"
 								value={destination}
 							/>
 						</div>
 						<div className="space-y-2">
-							<label htmlFor="sol-amount">Amount (SOL)</label>
+							<label htmlFor="send-amount">Amount (SOL)</label>
 							<Input
 								autoComplete="off"
-								id="sol-amount"
+								id="send-amount"
 								min="0"
 								onChange={(event) => setAmount(event.target.value)}
-								placeholder="0.01"
+								placeholder="0.002"
 								step="0.0001"
 								type="number"
 								value={amount}
@@ -85,7 +83,7 @@ export function SolTransferForm() {
 						</div>
 						<div className="flex flex-wrap gap-2">
 							<Button disabled={!session || isSending} type="submit">
-								{isSending ? 'Sending…' : 'Send SOL'}
+								{isSending ? 'Submitting…' : 'Send'}
 							</Button>
 							<Button disabled={status === 'idle'} onClick={reset} type="button" variant="ghost">
 								Reset

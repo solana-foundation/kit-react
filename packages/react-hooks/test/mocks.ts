@@ -15,7 +15,7 @@ import {
 	type TransactionHelper,
 	type WalletConnector,
 	type WalletRegistry,
-} from '@solana/client-core';
+} from '@solana/client';
 import type { Address, ClusterUrl, Lamports, Signature, TransactionSigner } from '@solana/kit';
 import { type MockedFunction, vi } from 'vitest';
 
@@ -93,6 +93,19 @@ function createDefaultRpc(): SolanaClient['runtime']['rpc'] {
 		),
 		getProgramAccounts: vi.fn(() => createRpcPlan([])),
 		simulateTransaction: vi.fn(() => createRpcPlan({ value: { logs: [] } })),
+		getSignatureStatuses: vi.fn(() =>
+			createRpcPlan({
+				context: { slot: 0n },
+				value: [
+					{
+						confirmationStatus: 'processed',
+						confirmations: 0,
+						err: null,
+						slot: 0n,
+					},
+				],
+			}),
+		),
 	} as unknown as SolanaClient['runtime']['rpc'];
 }
 

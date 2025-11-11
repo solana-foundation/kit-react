@@ -1,7 +1,7 @@
 {
 	"name": "@solana/react-hooks",
 	"version": "0.0.1",
-	"description": "React hooks for the @solana/client-core Solana client",
+	"description": "React hooks for the @solana/client Solana client",
 	"exports": {
 		"edge-light": {
 			"import": "./dist/index.node.mjs",
@@ -54,7 +54,7 @@
 	"author": "Solana Labs Maintainers <maintainers@solanalabs.com>",
 	"license": "MIT",
 	"dependencies": {
-		"@solana/client-core": "workspace:*",
+		"@solana/client": "workspace:*",
 		"@solana/addresses": "^5.0.0",
 		"@solana/codecs-core": "^5.0.0",
 		"@solana/errors": "^5.0.0",

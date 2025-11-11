@@ -1,4 +1,4 @@
-import { lamportsToSolString } from '@solana/client-core';
+import { lamportsToSolString } from '@solana/client';
 import { useBalance, useWallet } from '@solana/react-hooks';
 import { type ChangeEvent, useEffect, useState } from 'react';
 

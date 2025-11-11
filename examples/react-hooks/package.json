@@ -15,10 +15,11 @@
 		"typecheck": "pnpm test:typecheck"
 	},
 	"dependencies": {
-		"@solana/client-core": "workspace:*",
-		"@solana/react-hooks": "workspace:*",
-		"@solana/kit": "^5.0.0",
 		"@radix-ui/react-slot": "^1.1.0",
+		"@solana-program/system": "^0.9.0",
+		"@solana/client": "workspace:*",
+		"@solana/kit": "^5.0.0",
+		"@solana/react-hooks": "workspace:*",
 		"class-variance-authority": "^0.7.0",
 		"clsx": "^2.1.1",
 		"react": "^19.0.0",

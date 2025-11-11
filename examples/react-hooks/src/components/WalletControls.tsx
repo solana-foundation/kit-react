@@ -1,4 +1,4 @@
-import type { WalletConnector } from '@solana/client-core';
+import type { WalletConnector } from '@solana/client';
 import { useConnectWallet, useDisconnectWallet, useWallet, useWalletSession } from '@solana/react-hooks';
 import { useCallback } from 'react';
 import { Button } from './ui/button';

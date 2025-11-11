@@ -1,4 +1,4 @@
-import type { ClientState } from '@solana/client-core';
+import type { ClientState } from '@solana/client';
 import { useStore } from 'zustand';
 
 import { useSolanaClient } from './context';

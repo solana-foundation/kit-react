@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import type { SolanaClient } from '@solana/client-core';
+import type { SolanaClient } from '@solana/client';
 import { describe, expect, it, vi } from 'vitest';
 
 import { createAddress } from '../test/fixtures';

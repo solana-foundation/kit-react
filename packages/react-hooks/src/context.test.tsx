@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-import type { SolanaClientConfig } from '@solana/client-core';
-import { createClient } from '@solana/client-core';
+import type { SolanaClientConfig } from '@solana/client';
+import { createClient } from '@solana/client';
 import { render, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -10,8 +10,8 @@ import { renderHookWithClient } from '../test/utils';
 
 import { SolanaClientProvider, useSolanaClient } from './context';
 
-vi.mock('@solana/client-core', async () => {
-	const actual = await vi.importActual<typeof import('@solana/client-core')>('@solana/client-core');
+vi.mock('@solana/client', async () => {
+	const actual = await vi.importActual<typeof import('@solana/client')>('@solana/client');
 	return {
 		...actual,
 		createClient: vi.fn(),

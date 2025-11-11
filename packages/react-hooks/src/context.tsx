@@ -1,4 +1,4 @@
-import { createClient, type SolanaClient, type SolanaClientConfig } from '@solana/client-core';
+import { createClient, type SolanaClient, type SolanaClientConfig } from '@solana/client';
 import type { ReactNode } from 'react';
 import { createContext, useContext, useEffect, useMemo } from 'react';
 
