@@ -17,15 +17,10 @@ import {
 
 import { createLogger, formatError } from '../logging/logger';
 import { createSolanaRpcClient } from '../rpc/createSolanaRpcClient';
-import type {
-	ClientActions,
-	ClientState,
-	ClientStore,
-	SolanaClientRuntime,
-	WalletRegistry,
-	WalletSession,
-} from '../types';
+import type { SolanaClientRuntime } from '../rpc/types';
+import type { ClientActions, ClientState, ClientStore } from '../types';
 import { now } from '../utils';
+import type { WalletRegistry, WalletSession } from '../wallet/types';
 
 type MutableRuntime = SolanaClientRuntime;
 

@@ -30,14 +30,14 @@ import {
 	getSetComputeUnitLimitInstruction,
 	getSetComputeUnitPriceInstruction,
 } from '@solana-program/compute-budget';
-
+import type { SolanaClientRuntime } from '../rpc/types';
 import { createWalletTransactionSigner, isWalletSession, resolveSignerMode } from '../signers/walletTransactionSigner';
 import {
 	type PrepareTransactionMessage,
 	type PrepareTransactionOptions,
 	prepareTransaction as prepareTransactionUtility,
 } from '../transactions/prepareTransaction';
-import type { SolanaClientRuntime, WalletSession } from '../types';
+import type { WalletSession } from '../wallet/types';
 
 type BlockhashLifetime = Readonly<{
 	blockhash: Blockhash;

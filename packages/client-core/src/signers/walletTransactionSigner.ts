@@ -15,8 +15,7 @@ import {
 	type TransactionWithinSizeLimit,
 	type TransactionWithLifetime,
 } from '@solana/kit';
-
-import type { WalletSession } from '../types';
+import type { WalletSession } from '../wallet/types';
 
 type WalletTransactionSignerMode = 'partial' | 'send';
 

@@ -1,4 +1,4 @@
-import type { WalletConnector, WalletRegistry } from '../types';
+import type { WalletConnector, WalletRegistry } from './types';
 
 /**
  * Creates an in-memory wallet registry from the provided connectors.

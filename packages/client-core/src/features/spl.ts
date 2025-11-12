@@ -28,8 +28,9 @@ import {
 } from '@solana-program/token';
 
 import { createTokenAmount, type TokenAmountMath } from '../numeric/amounts';
+import type { SolanaClientRuntime } from '../rpc/types';
 import { createWalletTransactionSigner, isWalletSession, resolveSignerMode } from '../signers/walletTransactionSigner';
-import type { SolanaClientRuntime, WalletSession } from '../types';
+import type { WalletSession } from '../wallet/types';
 import type { SolTransferSendOptions } from './sol';
 
 type BlockhashLifetime = Readonly<{

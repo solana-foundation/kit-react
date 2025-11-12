@@ -1,7 +1,8 @@
 import type { Address, Signature } from '@solana/kit';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { ClientStore, SolanaClientRuntime } from '../types';
+import type { SolanaClientRuntime } from '../rpc/types';
+import type { ClientStore } from '../types';
 import { createDefaultClientStore } from './createClientStore';
 import { createWatchers } from './watchers';
 

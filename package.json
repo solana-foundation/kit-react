@@ -12,7 +12,8 @@
 		"lint": "turbo run lint",
 		"test": "turbo run test",
 		"typecheck": "turbo run typecheck",
-		"prepare": "husky"
+		"prepare": "husky",
+		"check:circular-deps": "turbo run check:circular-deps"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.3.4",

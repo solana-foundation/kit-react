@@ -2,7 +2,9 @@ import type { Address, Lamports, SendableTransaction, Signature, Transaction } f
 import type { TransactionWithLastValidBlockHeight } from '@solana/transaction-confirmation';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { ClientActions, SolanaClientRuntime, WalletConnector, WalletRegistry } from '../types';
+import type { SolanaClientRuntime } from '../rpc/types';
+import type { ClientActions } from '../types';
+import type { WalletConnector, WalletRegistry } from '../wallet/types';
 import { createActions } from './actions';
 import { createDefaultClientStore } from './createClientStore';
 
