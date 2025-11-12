@@ -2,7 +2,7 @@ import { getBase58Decoder } from '@solana/codecs-strings';
 import type { TransactionSigner } from '@solana/kit';
 import { describe, expect, it, vi } from 'vitest';
 
-import type { WalletSession } from '../types';
+import type { WalletSession } from '../wallet/types';
 import { createWalletTransactionSigner, isWalletSession, resolveSignerMode } from './walletTransactionSigner';
 
 type SessionTransaction = Parameters<NonNullable<WalletSession['signTransaction']>>[0];

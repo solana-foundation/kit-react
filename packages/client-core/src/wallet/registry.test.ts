@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-
-import type { WalletConnector } from '../types';
 import { createWalletRegistry } from './registry';
+import type { WalletConnector } from './types';
 
 describe('wallet registry', () => {
 	const connector = (id: string): WalletConnector => ({

@@ -47,9 +47,9 @@
 		"compile:typedefs": "tsc -p ./tsconfig.declarations.json",
 		"format": "biome check --write src",
 		"lint": "biome check src",
-		"test:typecheck": "tsc --noEmit",
+		"test:typecheck": "tsc --noEmit -p tsconfig.test.json",
 		"test": "vitest run --config ./vitest.config.ts",
-		"typecheck": "pnpm test:typecheck",
+		"typecheck": "tsc --noEmit",
 		"check:circular-deps": "madge --circular $(find ./src -name '*.ts' -o -name '*.tsx')"
 	},
 	"author": "Solana Labs Maintainers <maintainers@solanalabs.com>",
