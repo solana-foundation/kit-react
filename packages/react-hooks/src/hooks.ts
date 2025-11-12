@@ -1,9 +1,23 @@
 import {
 	type AccountCacheEntry,
+	type AddressLike,
+	type AsyncState,
 	type ClientState,
+	type ConfirmationCommitment,
+	confirmationMeetsCommitment,
+	createAsyncState,
+	createInitialAsyncState,
+	createSolTransferController,
+	createTransactionPoolController,
+	deriveConfirmationStatus,
 	getWalletStandardConnectors,
+	type LatestBlockhashCache,
+	normalizeSignature,
+	SIGNATURE_STATUS_TIMEOUT_MS,
+	type SignatureLike,
+	type SolanaClient,
 	type SolTransferHelper,
-	type SolTransferPrepareConfig,
+	type SolTransferInput,
 	type SolTransferSendOptions,
 	type SplTokenBalance,
 	type SplTokenHelper,
@@ -11,24 +25,29 @@ import {
 	type SplTransferPrepareConfig,
 	type TransactionHelper,
 	type TransactionInstructionInput,
+	type TransactionInstructionList,
+	type TransactionPoolController,
+	type TransactionPoolPrepareAndSendOptions,
+	type TransactionPoolPrepareOptions,
+	type TransactionPoolSendOptions,
+	type TransactionPoolSignOptions,
 	type TransactionPrepareAndSendRequest,
 	type TransactionPrepared,
-	type TransactionPrepareRequest,
 	type TransactionSendOptions,
-	type TransactionSignOptions,
+	toAddress,
 	type WalletConnector,
 	type WalletSession,
 	type WalletStatus,
 	watchWalletStandardConnectors,
-} from '@solana/client-core';
+} from '@solana/client';
 import type { Commitment, Lamports, Signature } from '@solana/kit';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import useSWR from 'swr';
 
 import { useSolanaClient } from './context';
+import { type SolanaQueryResult, type UseSolanaRpcQueryOptions, useSolanaRpcQuery } from './query';
 import { type LatestBlockhashQueryResult, type UseLatestBlockhashOptions, useLatestBlockhash } from './queryHooks';
 import { useClientStore } from './useClientStore';
-import { type AddressLike, toAddress } from './utils/address';
 
 type ClusterState = ClientState['cluster'];
 type ClusterStatus = ClientState['cluster']['status'];
@@ -36,15 +55,15 @@ type WalletStandardDiscoveryOptions = Parameters<typeof watchWalletStandardConne
 
 type UnwrapPromise<T> = T extends Promise<infer U> ? U : T;
 
-type AsyncState<T> = Readonly<{
-	data?: T;
-	error?: unknown;
-	status: 'error' | 'idle' | 'loading' | 'success';
-}>;
+type RpcInstance = SolanaClient['runtime']['rpc'];
 
-function createInitialAsyncState<T>(): AsyncState<T> {
-	return { status: 'idle' };
-}
+type SignatureStatusesPlan = ReturnType<RpcInstance['getSignatureStatuses']>;
+
+type SignatureStatusesResponse = Awaited<ReturnType<SignatureStatusesPlan['send']>>;
+
+type SignatureStatusValue = SignatureStatusesResponse['value'][number];
+
+type SignatureStatusConfig = Parameters<RpcInstance['getSignatureStatuses']>[1];
 
 type UseAccountOptions = Readonly<{
 	commitment?: Commitment;
@@ -141,9 +160,6 @@ export function useDisconnectWallet(): () => Promise<void> {
 }
 
 type SolTransferSignature = UnwrapPromise<ReturnType<SolTransferHelper['sendTransfer']>>;
-type SolTransferInput = Omit<SolTransferPrepareConfig, 'authority'> & {
-	authority?: SolTransferPrepareConfig['authority'];
-};
 
 /**
  * Convenience wrapper around the SOL transfer helper that tracks status and signature.
@@ -160,39 +176,37 @@ export function useSolTransfer(): Readonly<{
 	const client = useSolanaClient();
 	const session = useWalletSession();
 	const helper = client.solTransfer;
-	const [state, setState] = useState<AsyncState<SolTransferSignature>>(() =>
-		createInitialAsyncState<SolTransferSignature>(),
+	const sessionRef = useRef(session);
+
+	useEffect(() => {
+		sessionRef.current = session;
+	}, [session]);
+
+	const controller = useMemo(
+		() =>
+			createSolTransferController({
+				authorityProvider: () => sessionRef.current,
+				helper,
+			}),
+		[helper],
+	);
+
+	const state = useSyncExternalStore<AsyncState<SolTransferSignature>>(
+		controller.subscribe,
+		controller.getState,
+		controller.getState,
 	);
 
 	const send = useCallback(
-		async (config: SolTransferInput, options?: SolTransferSendOptions) => {
-			const { authority: authorityOverride, ...rest } = config;
-			const authority = authorityOverride ?? session;
-			if (!authority) {
-				throw new Error('Connect a wallet or supply an `authority` before sending SOL transfers.');
-			}
-			setState({ status: 'loading' });
-			try {
-				const signature = await helper.sendTransfer({ ...rest, authority }, options);
-				setState({ data: signature, status: 'success' });
-				return signature;
-			} catch (error) {
-				setState({ error, status: 'error' });
-				throw error;
-			}
-		},
-		[helper, session],
+		(config: SolTransferInput, options?: SolTransferSendOptions) => controller.send(config, options),
+		[controller],
 	);
-
-	const reset = useCallback(() => {
-		setState(() => createInitialAsyncState<SolTransferSignature>());
-	}, []);
 
 	return {
 		error: state.error ?? null,
 		helper,
 		isSending: state.status === 'loading',
-		reset,
+		reset: controller.reset,
 		send,
 		signature: state.data ?? null,
 		status: state.status,
@@ -462,28 +476,18 @@ export function useWalletStandardConnectors(options?: WalletStandardDiscoveryOpt
 	return connectors;
 }
 
-type TransactionInstructionList = readonly TransactionInstructionInput[];
-
 type UseTransactionPoolConfig = Readonly<{
 	instructions?: TransactionInstructionList;
 	latestBlockhash?: UseLatestBlockhashOptions;
 }>;
 
-type UseTransactionPoolPrepareOptions = Readonly<
-	Partial<Omit<TransactionPrepareRequest, 'instructions'>> & {
-		instructions?: TransactionInstructionList;
-	}
->;
+type UseTransactionPoolPrepareOptions = TransactionPoolPrepareOptions;
 
-type UseTransactionPoolSignOptions = Readonly<TransactionSignOptions & { prepared?: TransactionPrepared }>;
+type UseTransactionPoolSignOptions = TransactionPoolSignOptions;
 
-type UseTransactionPoolSendOptions = Readonly<TransactionSendOptions & { prepared?: TransactionPrepared }>;
+type UseTransactionPoolSendOptions = TransactionPoolSendOptions;
 
-type UseTransactionPoolPrepareAndSendOptions = Readonly<
-	Omit<TransactionPrepareAndSendRequest, 'instructions'> & {
-		instructions?: TransactionInstructionList;
-	}
->;
+type UseTransactionPoolPrepareAndSendOptions = TransactionPoolPrepareAndSendOptions;
 
 type TransactionSignature = Signature;
 
@@ -522,196 +526,309 @@ export function useTransactionPool(config: UseTransactionPoolConfig = {}): Reado
 	);
 	const client = useSolanaClient();
 	const helper = client.helpers.transaction;
-	const latestBlockhash = useLatestBlockhash(config.latestBlockhash);
 	const blockhashMaxAgeMs = config.latestBlockhash?.refreshInterval ?? 30_000;
-	const [instructions, setInstructions] = useState<TransactionInstructionInput[]>(() => [...initialInstructions]);
-	const [prepared, setPrepared] = useState<TransactionPrepared | null>(null);
-	const [prepareState, setPrepareState] = useState<AsyncState<TransactionPrepared>>(() =>
-		createInitialAsyncState<TransactionPrepared>(),
+	const controller = useMemo<TransactionPoolController>(
+		() =>
+			createTransactionPoolController({
+				blockhashMaxAgeMs,
+				helper,
+				initialInstructions,
+			}),
+		[blockhashMaxAgeMs, helper, initialInstructions],
 	);
-	const [sendState, setSendState] = useState<AsyncState<TransactionSignature>>(() =>
-		createInitialAsyncState<TransactionSignature>(),
-	);
-	const latestBlockhashData = latestBlockhash.data;
-	const latestBlockhashUpdatedAt = latestBlockhash.dataUpdatedAt;
-
-	const resolveCachedLifetime = useCallback(() => {
-		if (!latestBlockhashData?.value || !latestBlockhashUpdatedAt) {
-			return undefined;
-		}
-		if (Date.now() - latestBlockhashUpdatedAt > blockhashMaxAgeMs) {
-			return undefined;
-		}
-		return latestBlockhashData.value;
-	}, [blockhashMaxAgeMs, latestBlockhashData, latestBlockhashUpdatedAt]);
+	const latestBlockhash = useLatestBlockhash(config.latestBlockhash);
 
 	useEffect(() => {
-		setInstructions([...initialInstructions]);
-	}, [initialInstructions]);
+		const value = latestBlockhash.data?.value;
+		if (!value) {
+			controller.setLatestBlockhashCache(undefined);
+			return;
+		}
+		const cache: LatestBlockhashCache = {
+			updatedAt: latestBlockhash.dataUpdatedAt ?? Date.now(),
+			value,
+		};
+		controller.setLatestBlockhashCache(cache);
+	}, [controller, latestBlockhash.data, latestBlockhash.dataUpdatedAt]);
 
-	useEffect(() => {
-		// Reset derived state whenever the instruction list changes.
-		void instructions.length;
-		setPrepared(null);
-		setPrepareState(createInitialAsyncState<TransactionPrepared>());
-		setSendState(createInitialAsyncState<TransactionSignature>());
-	}, [instructions]);
-
-	const addInstruction = useCallback((instruction: TransactionInstructionInput) => {
-		setInstructions((current) => [...current, instruction]);
-	}, []);
-
-	const addInstructions = useCallback((instructionSet: TransactionInstructionList) => {
-		setInstructions((current) => [...current, ...instructionSet]);
-	}, []);
-
-	const replaceInstructions = useCallback((instructionSet: TransactionInstructionList) => {
-		setInstructions([...instructionSet]);
-	}, []);
-
-	const clearInstructions = useCallback(() => {
-		setInstructions([]);
-	}, []);
-
-	const removeInstruction = useCallback((index: number) => {
-		setInstructions((current) => current.filter((_, idx) => idx !== index));
-	}, []);
-
-	const reset = useCallback(() => {
-		setInstructions([...initialInstructions]);
-		setPrepared(null);
-		setPrepareState(createInitialAsyncState<TransactionPrepared>());
-		setSendState(createInitialAsyncState<TransactionSignature>());
-	}, [initialInstructions]);
-
-	const prepare = useCallback(
-		async (options: UseTransactionPoolPrepareOptions = {}): Promise<TransactionPrepared> => {
-			const { instructions: overrideInstructions, ...rest } = options;
-			const nextInstructions = overrideInstructions ?? instructions;
-			if (!nextInstructions.length) {
-				throw new Error('Add at least one instruction before preparing a transaction.');
-			}
-			setPrepareState({ status: 'loading' });
-			try {
-				const request: TransactionPrepareRequest = {
-					...(rest as Omit<TransactionPrepareRequest, 'instructions'>),
-					instructions: nextInstructions,
-				};
-				const cachedLifetime = request.lifetime ?? resolveCachedLifetime();
-				const requestWithLifetime =
-					cachedLifetime && !request.lifetime ? { ...request, lifetime: cachedLifetime } : request;
-				const nextPrepared = await helper.prepare(requestWithLifetime);
-				setPrepared(nextPrepared);
-				setPrepareState({ data: nextPrepared, status: 'success' });
-				return nextPrepared;
-			} catch (error) {
-				setPrepareState({ error, status: 'error' });
-				throw error;
-			}
-		},
-		[helper, instructions, resolveCachedLifetime],
+	const instructions = useSyncExternalStore<TransactionInstructionList>(
+		controller.subscribeInstructions,
+		controller.getInstructions,
+		controller.getInstructions,
 	);
-
-	const sign = useCallback(
-		async (options: UseTransactionPoolSignOptions = {}) => {
-			const { prepared: overridePrepared, ...rest } = options;
-			const target = overridePrepared ?? prepared;
-			if (!target) {
-				throw new Error('Prepare a transaction before signing.');
-			}
-			return helper.sign(target, rest);
-		},
-		[helper, prepared],
+	const prepared = useSyncExternalStore<TransactionPrepared | null>(
+		controller.subscribePrepared,
+		controller.getPrepared,
+		controller.getPrepared,
 	);
-
-	const toWire = useCallback(
-		async (options: UseTransactionPoolSignOptions = {}) => {
-			const { prepared: overridePrepared, ...rest } = options;
-			const target = overridePrepared ?? prepared;
-			if (!target) {
-				throw new Error('Prepare a transaction before serializing.');
-			}
-			return helper.toWire(target, rest);
-		},
-		[helper, prepared],
+	const prepareState = useSyncExternalStore<AsyncState<TransactionPrepared>>(
+		controller.subscribePrepareState,
+		controller.getPrepareState,
+		controller.getPrepareState,
 	);
-
-	const send = useCallback(
-		async (options: UseTransactionPoolSendOptions = {}): Promise<TransactionSignature> => {
-			const { prepared: overridePrepared, ...rest } = options;
-			const target = overridePrepared ?? prepared;
-			if (!target) {
-				throw new Error('Prepare a transaction before sending.');
-			}
-			setSendState({ status: 'loading' });
-			try {
-				const signature = await helper.send(target, rest);
-				setSendState({ data: signature, status: 'success' });
-				return signature;
-			} catch (error) {
-				setSendState({ error, status: 'error' });
-				throw error;
-			}
-		},
-		[helper, prepared],
+	const sendState = useSyncExternalStore<AsyncState<TransactionSignature>>(
+		controller.subscribeSendState,
+		controller.getSendState,
+		controller.getSendState,
 	);
-
-	const prepareAndSend = useCallback(
-		async (
-			request: UseTransactionPoolPrepareAndSendOptions = {},
-			sendOptions?: TransactionSendOptions,
-		): Promise<TransactionSignature> => {
-			const { instructions: overrideInstructions, ...rest } = request;
-			const nextInstructions = overrideInstructions ?? instructions;
-			if (!nextInstructions.length) {
-				throw new Error('Add at least one instruction before preparing a transaction.');
-			}
-			setSendState({ status: 'loading' });
-			try {
-				const cachedLifetime = rest.lifetime ?? resolveCachedLifetime();
-				const restWithLifetime =
-					cachedLifetime && !rest.lifetime ? { ...rest, lifetime: cachedLifetime } : rest;
-				const signature = await helper.prepareAndSend(
-					{
-						...(restWithLifetime as Omit<TransactionPrepareAndSendRequest, 'instructions'>),
-						instructions: nextInstructions,
-					},
-					sendOptions,
-				);
-				setSendState({ data: signature, status: 'success' });
-				return signature;
-			} catch (error) {
-				setSendState({ error, status: 'error' });
-				throw error;
-			}
-		},
-		[helper, instructions, resolveCachedLifetime],
-	);
-
-	const isPreparing = prepareState.status === 'loading';
-	const isSending = sendState.status === 'loading';
 
 	return {
-		addInstruction,
-		addInstructions,
-		clearInstructions,
+		addInstruction: controller.addInstruction,
+		addInstructions: controller.addInstructions,
+		clearInstructions: controller.clearInstructions,
 		instructions,
-		isPreparing,
-		isSending,
+		isPreparing: prepareState.status === 'loading',
+		isSending: sendState.status === 'loading',
 		prepared,
-		prepare,
+		prepare: controller.prepare,
 		prepareError: prepareState.error ?? null,
 		prepareStatus: prepareState.status,
-		removeInstruction,
-		replaceInstructions,
-		reset,
-		send,
+		removeInstruction: controller.removeInstruction,
+		replaceInstructions: controller.replaceInstructions,
+		reset: controller.reset,
+		send: controller.send,
 		sendError: sendState.error ?? null,
 		sendSignature: sendState.data ?? null,
 		sendStatus: sendState.status,
-		prepareAndSend,
-		sign,
-		toWire,
+		prepareAndSend: controller.prepareAndSend,
+		sign: controller.sign,
+		toWire: controller.toWire,
 		latestBlockhash,
+	};
+}
+
+type SendTransactionSignature = Signature;
+
+type UseSendTransactionResult = Readonly<{
+	error: unknown;
+	isSending: boolean;
+	reset(): void;
+	send(
+		request: TransactionPrepareAndSendRequest,
+		options?: TransactionSendOptions,
+	): Promise<SendTransactionSignature>;
+	sendPrepared(prepared: TransactionPrepared, options?: TransactionSendOptions): Promise<SendTransactionSignature>;
+	signature: SendTransactionSignature | null;
+	status: AsyncState<SendTransactionSignature>['status'];
+}>;
+
+/**
+ * General-purpose helper that prepares and sends arbitrary transactions through {@link TransactionHelper}.
+ */
+export function useSendTransaction(): UseSendTransactionResult {
+	const client = useSolanaClient();
+	const helper = client.transaction;
+	const session = useWalletSession();
+	const [state, setState] = useState<AsyncState<SendTransactionSignature>>(() =>
+		createInitialAsyncState<SendTransactionSignature>(),
+	);
+
+	const execute = useCallback(
+		async (operation: () => Promise<SendTransactionSignature>): Promise<SendTransactionSignature> => {
+			setState(createAsyncState<SendTransactionSignature>('loading'));
+			try {
+				const signature = await operation();
+				setState(createAsyncState<SendTransactionSignature>('success', { data: signature }));
+				return signature;
+			} catch (error) {
+				setState(createAsyncState<SendTransactionSignature>('error', { error }));
+				throw error;
+			}
+		},
+		[],
+	);
+
+	const ensureAuthority = useCallback(
+		(request: TransactionPrepareAndSendRequest): TransactionPrepareAndSendRequest => {
+			if (request.authority) {
+				return request;
+			}
+			if (!session) {
+				throw new Error('Connect a wallet or supply an `authority` before sending transactions.');
+			}
+			return { ...request, authority: session };
+		},
+		[session],
+	);
+
+	const send = useCallback(
+		async (request: TransactionPrepareAndSendRequest, options?: TransactionSendOptions) => {
+			const normalizedRequest = ensureAuthority(request);
+			return execute(() => helper.prepareAndSend(normalizedRequest, options));
+		},
+		[ensureAuthority, execute, helper],
+	);
+
+	const sendPrepared = useCallback(
+		async (prepared: TransactionPrepared, options?: TransactionSendOptions) =>
+			execute(() => helper.send(prepared, options)),
+		[execute, helper],
+	);
+
+	const reset = useCallback(() => {
+		setState(createInitialAsyncState<SendTransactionSignature>());
+	}, []);
+
+	return {
+		error: state.error ?? null,
+		isSending: state.status === 'loading',
+		reset,
+		send,
+		sendPrepared,
+		signature: state.data ?? null,
+		status: state.status,
+	};
+}
+
+export type UseSignatureStatusOptions = UseSolanaRpcQueryOptions<SignatureStatusValue | null> &
+	Readonly<{
+		config?: SignatureStatusConfig;
+	}>;
+
+export type SignatureStatusResult = SolanaQueryResult<SignatureStatusValue | null> &
+	Readonly<{
+		confirmationStatus: ConfirmationCommitment | null;
+		signatureStatus: SignatureStatusValue | null;
+	}>;
+
+/**
+ * Fetch the RPC status for a transaction signature.
+ */
+export function useSignatureStatus(
+	signatureInput?: SignatureLike,
+	options: UseSignatureStatusOptions = {},
+): SignatureStatusResult {
+	const { config, ...queryOptions } = options;
+	const signature = useMemo(() => normalizeSignature(signatureInput), [signatureInput]);
+	const signatureKey = signature?.toString() ?? null;
+	const configKey = useMemo(() => JSON.stringify(config ?? null), [config]);
+	const fetcher = useCallback(
+		async (client: SolanaClient) => {
+			if (!signatureKey) {
+				throw new Error('Provide a signature before querying its status.');
+			}
+			if (!signature) {
+				throw new Error('Provide a signature before querying its status.');
+			}
+			const plan = client.runtime.rpc.getSignatureStatuses([signature], config);
+			const response = await plan.send({ abortSignal: AbortSignal.timeout(SIGNATURE_STATUS_TIMEOUT_MS) });
+			return response.value[0] ?? null;
+		},
+		[config, signature, signatureKey],
+	);
+	const disabled = queryOptions.disabled ?? !signatureKey;
+	const query = useSolanaRpcQuery<SignatureStatusValue | null>(
+		'signatureStatus',
+		[signatureKey, configKey],
+		fetcher,
+		{
+			...queryOptions,
+			disabled,
+		},
+	);
+	const confirmationStatus = deriveConfirmationStatus(query.data ?? null);
+	return {
+		...query,
+		confirmationStatus,
+		signatureStatus: query.data ?? null,
+	};
+}
+
+export type SignatureWaitStatus = 'error' | 'idle' | 'success' | 'waiting';
+
+export type UseWaitForSignatureOptions = Omit<UseSignatureStatusOptions, 'disabled'> &
+	Readonly<{
+		commitment?: ConfirmationCommitment;
+		disabled?: boolean;
+		subscribe?: boolean;
+		watchCommitment?: ConfirmationCommitment;
+	}>;
+
+export type WaitForSignatureResult = SignatureStatusResult &
+	Readonly<{
+		isError: boolean;
+		isSuccess: boolean;
+		isWaiting: boolean;
+		waitError: unknown;
+		waitStatus: SignatureWaitStatus;
+	}>;
+
+/**
+ * Polls signature status data until the desired commitment (or subscription notification) is reached.
+ */
+export function useWaitForSignature(
+	signatureInput?: SignatureLike,
+	options: UseWaitForSignatureOptions = {},
+): WaitForSignatureResult {
+	const {
+		commitment = 'confirmed',
+		disabled: disabledOption,
+		subscribe = true,
+		watchCommitment,
+		...signatureStatusOptions
+	} = options;
+	const { refreshInterval, ...restStatusOptions } = signatureStatusOptions;
+	const subscribeCommitment = watchCommitment ?? commitment;
+	const client = useSolanaClient();
+	const normalizedSignature = useMemo(() => normalizeSignature(signatureInput), [signatureInput]);
+	const disabled = disabledOption ?? !normalizedSignature;
+	const statusQuery = useSignatureStatus(signatureInput, {
+		...restStatusOptions,
+		refreshInterval: refreshInterval ?? 2_000,
+		disabled,
+	});
+	const [subscriptionSettled, setSubscriptionSettled] = useState(false);
+
+	useEffect(() => {
+		if (normalizedSignature === undefined) {
+			setSubscriptionSettled(false);
+			return;
+		}
+		setSubscriptionSettled(false);
+	}, [normalizedSignature]);
+
+	useEffect(() => {
+		if (!normalizedSignature || disabled || !subscribe) {
+			return;
+		}
+		const subscription = client.watchers.watchSignature(
+			{
+				commitment: subscribeCommitment,
+				enableReceivedNotification: true,
+				signature: normalizedSignature,
+			},
+			() => {
+				setSubscriptionSettled(true);
+			},
+		);
+		return () => {
+			subscription.abort();
+		};
+	}, [client, disabled, normalizedSignature, subscribe, subscribeCommitment]);
+
+	const hasSignature = Boolean(normalizedSignature) && !disabled;
+	const signatureError = statusQuery.signatureStatus?.err ?? null;
+	const waitError = statusQuery.error ?? signatureError ?? null;
+	const meetsCommitment = confirmationMeetsCommitment(statusQuery.confirmationStatus, commitment);
+	const settled = subscriptionSettled || meetsCommitment;
+
+	let waitStatus: SignatureWaitStatus = 'idle';
+	if (!hasSignature) {
+		waitStatus = 'idle';
+	} else if (waitError) {
+		waitStatus = 'error';
+	} else if (settled) {
+		waitStatus = 'success';
+	} else {
+		waitStatus = 'waiting';
+	}
+
+	return {
+		...statusQuery,
+		isError: waitStatus === 'error',
+		isSuccess: waitStatus === 'success',
+		isWaiting: waitStatus === 'waiting',
+		waitError,
+		waitStatus,
 	};
 }

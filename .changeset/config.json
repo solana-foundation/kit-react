@@ -1,0 +1,14 @@
+{
+	"$schema": "https://unpkg.com/@changesets/config@3.0.4/schema.json",
+	"access": "public",
+	"baseBranch": "main",
+	"changelog": [
+		"@changesets/changelog-github",
+		{
+			"repo": "solana-foundation/kit-react"
+		}
+	],
+	"commit": false,
+	"linked": [],
+	"updateInternalDependencies": "patch"
+}

@@ -1,6 +1,12 @@
 export { createClient } from './client/createClient';
 export { createClientStore, createDefaultClientStore, createInitialClientState } from './client/createClientStore';
 export {
+	createSolTransferController,
+	type SolTransferController,
+	type SolTransferControllerConfig,
+	type SolTransferInput,
+} from './controllers/solTransferController';
+export {
 	createSolTransferHelper,
 	type SolTransferHelper,
 	type SolTransferPrepareConfig,
@@ -52,6 +58,16 @@ export {
 export type { SolanaClientRuntime } from './rpc/types';
 export { bigintFromJson, bigintToJson, lamportsFromJson, lamportsToJson } from './serialization/json';
 export {
+	type ConfirmationCommitment,
+	confirmationMeetsCommitment,
+	deriveConfirmationStatus,
+	normalizeSignature,
+	SIGNATURE_STATUS_TIMEOUT_MS,
+	type SignatureLike,
+	type SignatureStatusLike,
+} from './signatures/status';
+export { type AsyncState, type AsyncStatus, createAsyncState, createInitialAsyncState } from './state/asyncState';
+export {
 	transactionToBase64,
 	transactionToBase64WithSigners,
 } from './transactions/base64';
@@ -62,6 +78,17 @@ export {
 	prepareTransaction,
 } from './transactions/prepareTransaction';
 export { insertReferenceKey, insertReferenceKeys } from './transactions/referenceKeys';
+export {
+	createTransactionPoolController,
+	type LatestBlockhashCache,
+	type TransactionInstructionList,
+	type TransactionPoolConfig,
+	type TransactionPoolController,
+	type TransactionPoolPrepareAndSendOptions,
+	type TransactionPoolPrepareOptions,
+	type TransactionPoolSendOptions,
+	type TransactionPoolSignOptions,
+} from './transactions/transactionPoolController';
 export type {
 	AccountCache,
 	AccountCacheEntry,
@@ -75,6 +102,8 @@ export type {
 	SolanaClient,
 	SolanaClientConfig,
 } from './types';
+export { type AddressLike, toAddress, toAddressString } from './utils/addressLike';
+export { stableStringify } from './utils/stableStringify';
 export { createWalletRegistry } from './wallet/registry';
 export {
 	createWalletStandardConnector,

@@ -1,4 +1,4 @@
-import type { SolanaClient } from '@solana/client-core';
+import type { SolanaClient } from '@solana/client';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import useSWR, { type BareFetcher, type SWRConfiguration, type SWRResponse } from 'swr';
 

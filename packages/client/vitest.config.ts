@@ -8,7 +8,7 @@ export default mergeConfig(
 			include: ['src/**/*.{test,spec}.{ts,tsx}'],
 			coverage: {
 				include: ['src/**/*.{ts,tsx}'],
-				reportsDirectory: '../../coverage/client-core',
+				reportsDirectory: '../../coverage/client',
 			},
 		},
 	}),

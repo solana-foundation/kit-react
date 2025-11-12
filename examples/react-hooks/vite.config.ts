@@ -7,12 +7,12 @@ export default defineConfig({
 		alias: [
 			{
 				find: '@solana/client-poc',
-				replacement: '@solana/client-core',
+				replacement: '@solana/client',
 			},
 		],
 	},
 	optimizeDeps: {
-		include: ['@solana/client-core', '@solana/react-hooks'],
+		include: ['@solana/client', '@solana/react-hooks'],
 	},
 	server: {
 		host: '0.0.0.0',

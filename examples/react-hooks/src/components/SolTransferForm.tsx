@@ -1,4 +1,4 @@
-import { lamportsMath } from '@solana/client-core';
+import { lamportsMath } from '@solana/client';
 import { useSolTransfer, useWalletSession } from '@solana/react-hooks';
 import { type FormEvent, useEffect, useState } from 'react';
 

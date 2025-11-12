@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-import type { WalletConnector } from '@solana/client-core';
-import { getWalletStandardConnectors, watchWalletStandardConnectors } from '@solana/client-core';
+import type { WalletConnector } from '@solana/client';
+import { getWalletStandardConnectors, watchWalletStandardConnectors } from '@solana/client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createWalletSession } from '../test/fixtures';
@@ -13,8 +13,8 @@ let currentConnectors: WalletConnector[] = [];
 const unsubscribe = vi.fn();
 let emitConnectors: ((connectors: readonly WalletConnector[]) => void) | undefined;
 
-vi.mock('@solana/client-core', async () => {
-	const actual = await vi.importActual<typeof import('@solana/client-core')>('@solana/client-core');
+vi.mock('@solana/client', async () => {
+	const actual = await vi.importActual<typeof import('@solana/client')>('@solana/client');
 	return {
 		...actual,
 		getWalletStandardConnectors: vi.fn(() => currentConnectors),

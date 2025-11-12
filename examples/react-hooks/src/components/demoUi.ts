@@ -1,4 +1,4 @@
-import type { SplTokenBalance } from '@solana/client-core';
+import type { SplTokenBalance } from '@solana/client';
 import type { WalletSession } from '@solana/react-hooks';
 
 type AsyncStatus = 'disconnected' | 'error' | 'idle' | 'loading' | 'ready' | 'success';

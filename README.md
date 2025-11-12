@@ -6,14 +6,14 @@ Solana SDK delivers React-focused tooling for building Solana applications. This
 
 | Package | Description |
 | --- | --- |
-| [`@solana/react-hooks`](packages/react-hooks) | React bindings over the headless [`@solana/client-core`](../client-core) SDK. Supplies context providers plus hooks for wallet management, balances, transfers, and SPL helpers. |
+| [`@solana/react-hooks`](packages/react-hooks) | React bindings over the headless [`@solana/client`](packages/client) SDK. Supplies context providers plus hooks for wallet management, balances, transfers, and SPL helpers. |
 | [`@solana/example-react-hooks`](examples/react-hooks) | Tailwind/Vite demo application showcasing the hooks with a polished UI. Handy as a reference or quick-start template. |
 
 ---
 
 ## Transaction-helper DX
 
-`@solana/client-core` now folds automatic transaction preparation into the public surface. You can lean on `client.helpers.transaction.prepareAndSend` for the common “build → simulate → send” flow while still opting into the bare `prepareTransaction` utility when you need to log or inspect the wire payload. Feed it `addressLookupTables` and it automatically switches to v0 transactions—otherwise it stays legacy so you never have to name the version explicitly.
+`@solana/client` now folds automatic transaction preparation into the public surface. You can lean on `client.helpers.transaction.prepareAndSend` for the common “build → simulate → send” flow while still opting into the bare `prepareTransaction` utility when you need to log or inspect the wire payload. Feed it `addressLookupTables` and it automatically switches to v0 transactions—otherwise it stays legacy so you never have to name the version explicitly.
 
 ```ts
 const signature = await client.helpers.transaction.prepareAndSend(
@@ -46,22 +46,22 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to get involved.
 
 ## `@solana/react-hooks`
 
-React glue around the client-core SDK. You either hand it a `SolanaClient` instance or a config object and the provider wires everything together. Hooks expose cluster and wallet state in a React-friendly way so you can focus on UI.
+React glue around the client SDK. You either hand it a `SolanaClient` instance or a config object and the provider wires everything together. Hooks expose cluster and wallet state in a React-friendly way so you can focus on UI.
 
 ### Install
 
 ```bash
 # using pnpm
-pnpm add @solana/react-hooks @solana/client-core react react-dom
+pnpm add @solana/react-hooks @solana/client react react-dom
 
 # or npm
-npm install @solana/react-hooks @solana/client-core react react-dom
+npm install @solana/react-hooks @solana/client react react-dom
 ```
 
 ### Quick start
 
 ```tsx
-import type { SolanaClientConfig } from '@solana/client-core';
+import type { SolanaClientConfig } from '@solana/client';
 import {
     SolanaClientProvider,
     useConnectWallet,
@@ -248,7 +248,7 @@ pnpm --filter @solana/example-react-hooks build
 npx --yes pnpm --filter @solana/example-react-hooks build
 ```
 
-> If you consume `@solana/react-hooks` from the workspace, ensure the `@solana/client-poc` import is aliased to `@solana/client-core` (the example’s Vite config handles this).
+> If you consume `@solana/react-hooks` from the workspace, ensure the `@solana/client-poc` import is aliased to `@solana/client` (the example’s Vite config handles this).
 
 ---
 

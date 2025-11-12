@@ -1,4 +1,4 @@
-import type { SolanaClient } from '@solana/client-core';
+import type { SolanaClient } from '@solana/client';
 import type { RenderHookOptions, RenderHookResult, RenderOptions } from '@testing-library/react';
 import { act, render as rtlRender, renderHook as rtlRenderHook, screen, waitFor, within } from '@testing-library/react';
 import type { ReactElement, ReactNode } from 'react';

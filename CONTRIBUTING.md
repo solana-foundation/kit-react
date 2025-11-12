@@ -23,6 +23,17 @@ Thanks for your interest in helping! This project is an experimental Solana SDK,
 4. Write tests when adding or modifying functionality.
 5. Open a pull request with a clear summary and note any follow-up work.
 
+## Versioning & Changesets
+
+- Any change that impacts a published package (e.g., `@solana/client`,
+  `@solana/react-hooks`) must include a Changeset entry. Run `pnpm changeset`
+  and follow the prompts to record the bump type and changelog note.
+- Multiple commits can reference the same changeset; it only needs to exist once
+  in the PR.
+- When the PR merges, the automated release workflow will collect these
+  entries, open a "Version Packages" PR, and eventually publish the new versions
+  to npm.
+
 ## Commit & PR Guidelines
 
 - Follow conventional commits when possible (e.g., `feat:`, `fix:`, `docs:`).

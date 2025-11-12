@@ -17,7 +17,12 @@
 		"strict": true,
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
-		"noFallthroughCasesInSwitch": true
+		"noFallthroughCasesInSwitch": true,
+		"baseUrl": ".",
+		"paths": {
+			"@solana/client": ["../../packages/client/src/index.ts"],
+			"@solana/client/*": ["../../packages/client/src/*"]
+		}
 	},
 	"include": ["src"]
 }

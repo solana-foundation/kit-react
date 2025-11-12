@@ -1,5 +1,5 @@
 {
-	"name": "@solana/client-core",
+	"name": "@solana/client",
 	"version": "0.0.1",
 	"description": "Framework-agnostic Solana client orchestration layer powering higher-level experiences",
 	"exports": {

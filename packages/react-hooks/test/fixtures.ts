@@ -1,4 +1,4 @@
-import type { AccountCacheEntry, WalletSession } from '@solana/client-core';
+import type { AccountCacheEntry, WalletSession } from '@solana/client';
 import {
 	type Address,
 	type Commitment,
@@ -10,7 +10,7 @@ import {
 import bs58 from 'bs58';
 import { vi } from 'vitest';
 
-export type { AccountCacheEntry } from '@solana/client-core';
+export type { AccountCacheEntry } from '@solana/client';
 
 export function createAddress(index = 0): Address {
 	const bytes = new Uint8Array(32);

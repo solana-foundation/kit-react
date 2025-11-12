@@ -1,6 +1,6 @@
 # @solana/react-hooks
 
-React hooks for `@solana/client-core`. Drop in the provider and call hooks instead of juggling RPC
+React hooks for `@solana/client`. Drop in the provider and call hooks instead of juggling RPC
 clients, wallets, and stores yourself.
 
 > **Status:** Experimental – breaking changes may land often.
@@ -59,6 +59,8 @@ export function App() {
 - `useBalance` / `useAccount` – fetch lamports once or keep account data in sync.
 - `useSolTransfer`, `useSplToken`, `useTransactionPool` – helper-driven flows for SOL, SPL, and
   general transactions.
+- `useSendTransaction` – prepare and submit arbitrary instructions with shared mutation state.
+- `useSignatureStatus`, `useWaitForSignature` – declarative helpers for tracking confirmations.
 - `useClientStore` – access the underlying Zustand store if you need low-level state.
 
 ### Wallet helpers
@@ -178,7 +180,7 @@ const SplBalance = ({ mint }) => {
 Compose instructions, refresh blockhashes automatically, and send transactions from one hook.
 
 ```tsx
-import type { TransactionInstructionInput } from '@solana/client-core';
+import type { TransactionInstructionInput } from '@solana/client';
 
 const useMemoizedInstruction = (): TransactionInstructionInput => ({
     accounts: [],
@@ -220,11 +222,66 @@ function ClusterStatus() {
 }
 ```
 
+### General transaction sender
+
+Use `useSendTransaction` when you already have instructions/messages and just need a mutation helper
+that exposes `{ send, sendPrepared, status, error, signature }`. When no authority is supplied, it
+will use the currently connected wallet session by default.
+
+```tsx
+import { useSendTransaction } from '@solana/react-hooks';
+
+function SendAnythingButton({ instructions }) {
+    const { send, isSending, signature, error } = useSendTransaction();
+
+    return (
+        <div>
+            <button disabled={isSending} onClick={() => send({ instructions })}>
+                {isSending ? 'Submitting…' : 'Send transaction'}
+            </button>
+            {signature ? <p>Signature: {signature}</p> : null}
+            {error ? <p role="alert">Failed to send: {String(error)}</p> : null}
+        </div>
+    );
+}
+```
+
+### Signature helpers
+
+Poll RPC for signature metadata or wait for a confirmation level without writing loops.
+
+```tsx
+import { useSignatureStatus, useWaitForSignature } from '@solana/react-hooks';
+
+function SignatureStatusCard({ signature }) {
+    const status = useSignatureStatus(signature);
+
+    if (status.isLoading) return <p>Loading…</p>;
+    if (status.isError) return <p>RPC error.</p>;
+
+    return (
+        <div>
+            <p>Confirmation: {status.confirmationStatus ?? 'pending'}</p>
+            <button onClick={() => status.refresh()}>Refresh</button>
+        </div>
+    );
+}
+
+function WaitForSignature({ signature }) {
+    const wait = useWaitForSignature(signature, { commitment: 'finalized' });
+
+    if (wait.waitStatus === 'error') return <p role="alert">Failed: {JSON.stringify(wait.waitError)}</p>;
+    if (wait.waitStatus === 'success') return <p>Finalized!</p>;
+    if (wait.waitStatus === 'waiting') return <p>Waiting for confirmation…</p>;
+    return <p>Provide a signature</p>;
+}
+```
+
 ## Query hooks
 
 Wrap a subtree with `<SolanaQueryProvider>` and call hooks like `useLatestBlockhash`,
-`useProgramAccounts`, or `useSimulateTransaction`. Every hook returns `{ data, status, refresh }` so
-you can read the current value and trigger a refetch:
+`useProgramAccounts`, `useSignatureStatus`, or `useSimulateTransaction`. Every hook returns
+`{ data, status, refresh }` so you can read the current value and trigger a refetch:
 
 ### Latest blockhash
 
@@ -306,8 +363,8 @@ function SimulationLogs({ transaction }) {
 
 - Need Wallet Standard buttons or sign/send helpers? Use `useSignIn`, `useSignMessage`,
   `useSignTransaction`, and friends from `walletStandardHooks.ts`.
-- Looking for examples? See `examples/react-hooks` for a ready-to-run playground that wires the
-  provider, hooks, and mock UIs together.
+- Looking for examples? See `examples/react-hooks` for a ready-to-run, tabbed playground that wires
+  the provider, hooks, and mock UIs together across wallet/state, transaction, and query demos.
 
 ## Scripts
 

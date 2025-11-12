@@ -1,4 +1,13 @@
+import { basename } from 'node:path';
 import { defineConfig } from 'tsup';
+
+const packageDirName = basename(process.cwd());
+const external: string[] = [];
+const tsconfigPath = packageDirName === 'react-hooks' ? 'tsconfig.bundle.json' : 'tsconfig.json';
+
+if (packageDirName === 'react-hooks') {
+	external.push('@solana/client');
+}
 
 const entry = ['src/index.ts'];
 const common = {
@@ -13,6 +22,8 @@ const common = {
 	splitting: false,
 	target: 'es2022',
 	treeshake: true,
+	tsconfig: tsconfigPath,
+	external,
 } as const;
 
 export default defineConfig([

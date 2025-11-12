@@ -1,0 +1,26 @@
+name: Install Dependencies
+description: Sets up pnpm, Node.js, and installs workspace dependencies
+
+inputs:
+  version:
+    description: Node.js version to install
+    default: 'lts/*'
+    type: string
+
+runs:
+  using: composite
+  steps:
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 10.20.0
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.version }}
+        cache: pnpm
+
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile

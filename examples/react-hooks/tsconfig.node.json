@@ -7,7 +7,12 @@
 		"moduleResolution": "bundler",
 		"allowSyntheticDefaultImports": true,
 		"strict": true,
-		"noEmit": true
+		"noEmit": true,
+		"baseUrl": ".",
+		"paths": {
+			"@solana/client": ["../../packages/client/src/index.ts"],
+			"@solana/client/*": ["../../packages/client/src/*"]
+		}
 	},
 	"include": ["vite.config.ts"]
 }

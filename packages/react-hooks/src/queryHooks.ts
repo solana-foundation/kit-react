@@ -1,4 +1,4 @@
-import type { SolanaClient } from '@solana/client-core';
+import { type AddressLike, type SolanaClient, stableStringify, toAddress, toAddressString } from '@solana/client';
 import {
 	type Base64EncodedWireTransaction,
 	type Commitment,
@@ -10,7 +10,6 @@ import { useCallback, useMemo } from 'react';
 
 import type { SolanaQueryResult, UseSolanaRpcQueryOptions } from './query';
 import { useSolanaRpcQuery } from './query';
-import { type AddressLike, toAddress, toAddressString } from './utils/address';
 
 type RpcInstance = SolanaClient['runtime']['rpc'];
 
@@ -26,21 +25,6 @@ type SimulateTransactionConfig = Parameters<RpcInstance['simulateTransaction']>[
 type SimulateTransactionResponse = Awaited<ReturnType<SimulateTransactionPlan['send']>>;
 
 const DEFAULT_BLOCKHASH_REFRESH_INTERVAL = 30_000;
-
-type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue };
-
-function stableStringify(value: unknown): string {
-	const result = JSON.stringify(value, (_key, candidate) => {
-		if (typeof candidate === 'bigint') {
-			return { __type: 'bigint', value: candidate.toString() };
-		}
-		if (candidate instanceof Uint8Array) {
-			return Array.from(candidate);
-		}
-		return candidate as JsonValue;
-	});
-	return result ?? 'undefined';
-}
 
 export type UseLatestBlockhashOptions = Omit<UseSolanaRpcQueryOptions<LatestBlockhashResponse>, 'refreshInterval'> &
 	Readonly<{
@@ -115,11 +99,12 @@ export function useProgramAccounts(
 			if (!address) {
 				throw new Error('Provide a program address before querying program accounts.');
 			}
-			const fallbackCommitment = commitment ?? config?.commitment;
-			const plan = client.runtime.rpc.getProgramAccounts(address, {
-				...config,
-				commitment: fallbackCommitment ?? client.store.getState().cluster.commitment,
-			});
+			const fallbackCommitment = commitment ?? config?.commitment ?? client.store.getState().cluster.commitment;
+			const mergedConfig = {
+				...(config ?? {}),
+				commitment: fallbackCommitment,
+			} satisfies ProgramAccountsConfig;
+			const plan = client.runtime.rpc.getProgramAccounts(address, mergedConfig);
 			return plan.send({ abortSignal: AbortSignal.timeout(20_000) });
 		},
 		[address, commitment, config],
@@ -171,10 +156,11 @@ export function useSimulateTransaction(
 			if (!wire) {
 				throw new Error('Provide a transaction payload before simulating.');
 			}
-			const plan = client.runtime.rpc.simulateTransaction(wire, {
-				...config,
+			const resolvedConfig = {
+				...(config ?? {}),
 				commitment: commitment ?? config?.commitment ?? client.store.getState().cluster.commitment,
-			} as SimulateTransactionConfig);
+			} as SimulateTransactionConfig;
+			const plan = client.runtime.rpc.simulateTransaction(wire, resolvedConfig);
 			return plan.send({ abortSignal: AbortSignal.timeout(20_000) });
 		},
 		[commitment, config, wire],
