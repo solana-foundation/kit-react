@@ -17,8 +17,10 @@ import {
 
 import { createLogger, formatError } from '../logging/logger';
 import { createSolanaRpcClient } from '../rpc/createSolanaRpcClient';
-import type { ClientActions, ClientState, ClientStore, SolanaClientRuntime, WalletRegistry } from '../types';
+import type { SolanaClientRuntime } from '../rpc/types';
+import type { ClientActions, ClientState, ClientStore } from '../types';
 import { now } from '../utils';
+import type { WalletRegistry, WalletSession } from '../wallet/types';
 
 type MutableRuntime = SolanaClientRuntime;
 
@@ -156,12 +158,12 @@ export function createActions({ connectors, logger: inputLogger, runtime, store 
 	 * Initiates a wallet connection using a registered connector.
 	 *
 	 * @param connectorId - Identifier for the desired wallet connector.
-	 * @returns Promise that resolves once the connection attempt has completed.
+	 * @returns Promise that resolves to the wallet session once the connection attempt has completed.
 	 */
 	async function connectWallet(
 		connectorId: string,
 		options: Readonly<{ autoConnect?: boolean }> = {},
-	): Promise<void> {
+	): Promise<WalletSession> {
 		const connector = connectors.get(connectorId);
 		if (!connector) {
 			throw new Error(`No wallet connector registered for id "${connectorId}".`);
@@ -186,6 +188,7 @@ export function createActions({ connectors, logger: inputLogger, runtime, store 
 				level: 'info',
 				message: 'wallet connected',
 			});
+			return session;
 		} catch (error) {
 			store.setState((state) => ({
 				...state,

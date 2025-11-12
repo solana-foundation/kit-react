@@ -1,6 +1,7 @@
 import type { Lamports, SolanaRpcSubscriptionsApi } from '@solana/kit';
 
 import { createLogger, formatError } from '../logging/logger';
+import type { SolanaClientRuntime } from '../rpc/types';
 import type {
 	AccountCacheEntry,
 	AccountWatcherConfig,
@@ -8,7 +9,6 @@ import type {
 	ClientStore,
 	ClientWatchers,
 	SignatureWatcherConfig,
-	SolanaClientRuntime,
 	SubscriptionStatus,
 } from '../types';
 import { now } from '../utils';

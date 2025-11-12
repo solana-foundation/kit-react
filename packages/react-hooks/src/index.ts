@@ -1,4 +1,4 @@
-export { SolanaClientProvider, useSolanaClient } from './context';
+export { SolanaClientContext, SolanaClientProvider, useSolanaClient } from './context';
 export {
 	useAccount,
 	useBalance,

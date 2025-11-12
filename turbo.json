@@ -21,6 +21,9 @@
 		},
 		"typecheck": {
 			"outputs": []
+		},
+		"check:circular-deps": {
+			"outputs": []
 		}
 	}
 }

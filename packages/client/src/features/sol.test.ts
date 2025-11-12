@@ -1,6 +1,6 @@
 import type { TransactionSigner } from '@solana/kit';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { WalletSession } from '../types';
+import type { WalletSession } from '../wallet/types';
 
 type MutableMessage = {
 	instructions: unknown[];

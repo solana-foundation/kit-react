@@ -142,7 +142,7 @@ export function useWalletActions() {
 export function useConnectWallet(): (
 	connectorId: string,
 	options?: Readonly<{ autoConnect?: boolean }>,
-) => Promise<void> {
+) => Promise<WalletSession> {
 	const client = useSolanaClient();
 	return useCallback(
 		(connectorId: string, options?: Readonly<{ autoConnect?: boolean }>) =>
