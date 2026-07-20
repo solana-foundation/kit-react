@@ -22,7 +22,6 @@ import {
 	singleTransactionPlan,
 	type TransactionPlan,
 	type TransactionSigner,
-	type TransactionVersion,
 } from '@solana/kit';
 import { getTransferSolInstruction } from '@solana-program/system';
 import {
@@ -38,6 +37,7 @@ import type { SolanaClientRuntime } from '../rpc/types';
 import { createWalletTransactionSigner, isWalletSession, resolveSignerMode } from '../signers/walletTransactionSigner';
 import type { WalletSession } from '../wallet/types';
 import type { SolTransferSendOptions } from './sol';
+import type { SupportedTransactionVersion } from './transactions';
 
 /**
  * The Wrapped SOL (wSOL) mint address.
@@ -96,7 +96,7 @@ export type WsolWrapPrepareConfig = Readonly<{
 	/** Owner of the wSOL account. Defaults to the authority's address. */
 	owner?: Address | string;
 	/** Transaction version. Defaults to 0 (legacy). */
-	transactionVersion?: TransactionVersion;
+	transactionVersion?: SupportedTransactionVersion;
 }>;
 
 /**
@@ -121,7 +121,7 @@ export type WsolUnwrapPrepareConfig = Readonly<{
 	/** Owner of the wSOL account. Defaults to the authority's address. */
 	owner?: Address | string;
 	/** Transaction version. Defaults to 0 (legacy). */
-	transactionVersion?: TransactionVersion;
+	transactionVersion?: SupportedTransactionVersion;
 }>;
 
 /**

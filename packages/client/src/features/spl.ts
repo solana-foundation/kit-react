@@ -21,7 +21,6 @@ import {
 	singleTransactionPlan,
 	type TransactionPlan,
 	type TransactionSigner,
-	type TransactionVersion,
 } from '@solana/kit';
 import {
 	fetchMint as fetchMintStandard,
@@ -41,6 +40,7 @@ import { createWalletTransactionSigner, isWalletSession, resolveSignerMode } fro
 import type { WalletSession } from '../wallet/types';
 import type { SolTransferSendOptions } from './sol';
 import { detectTokenProgram } from './tokenPrograms';
+import type { SupportedTransactionVersion } from './transactions';
 
 /**
  * Blockhash and last valid block height for transaction lifetime.
@@ -151,7 +151,7 @@ export type SplTransferPrepareConfig = Readonly<{
 	/** Optional: explicit source token account. If not provided, ATA is derived. */
 	sourceToken?: Address | string;
 	/** Transaction version. Defaults to 0 (legacy). */
-	transactionVersion?: TransactionVersion;
+	transactionVersion?: SupportedTransactionVersion;
 }>;
 
 /**

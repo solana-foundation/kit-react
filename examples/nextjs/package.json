@@ -14,7 +14,7 @@
 	},
 	"dependencies": {
 		"@solana/client": "workspace:*",
-		"@solana/kit": "^6.0.1",
+		"@solana/kit": "^7.0.0",
 		"@solana/react-hooks": "workspace:*",
 		"@solana/connector": "^0.2.3",
 		"next": "^16.1.5",

@@ -32,7 +32,7 @@
 		"@changesets/changelog-github": "^0.5.1",
 		"@changesets/cli": "^2.29.7",
 		"@size-limit/preset-small-lib": "^12.0.0",
-		"@solana/codecs-strings": "^6.0.1",
+		"@solana/codecs-strings": "^7.0.0",
 		"@testing-library/jest-dom": "^6.6.3",
 		"@testing-library/react": "^16.1.0",
 		"@testing-library/user-event": "^14.5.2",

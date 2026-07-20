@@ -20,7 +20,6 @@ import {
 	singleTransactionPlan,
 	type TransactionPlan,
 	type TransactionSigner,
-	type TransactionVersion,
 } from '@solana/kit';
 import { getTransferSolInstruction } from '@solana-program/system';
 
@@ -28,6 +27,7 @@ import { lamportsMath } from '../numeric/lamports';
 import type { SolanaClientRuntime } from '../rpc/types';
 import { createWalletTransactionSigner, isWalletSession, resolveSignerMode } from '../signers/walletTransactionSigner';
 import type { WalletSession } from '../wallet/types';
+import type { SupportedTransactionVersion } from './transactions';
 
 /**
  * Blockhash and last valid block height for transaction lifetime.
@@ -79,7 +79,7 @@ export type SolTransferPrepareConfig = Readonly<{
 	/** Optional pre-fetched blockhash lifetime. If not provided, one will be fetched. */
 	lifetime?: BlockhashLifetime;
 	/** Transaction version. Defaults to 0 (legacy). */
-	transactionVersion?: TransactionVersion;
+	transactionVersion?: SupportedTransactionVersion;
 }>;
 
 /**
