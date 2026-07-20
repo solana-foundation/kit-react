@@ -54,6 +54,12 @@ type BlockhashLifetime = Readonly<{
 
 type TransactionInstruction = Parameters<typeof appendTransactionMessageInstruction>[0];
 
+/**
+ * Transaction versions these helpers support. Kit v7 introduced version `1`, which requires the
+ * dedicated v1 transaction config and is not handled here, so it is excluded.
+ */
+export type SupportedTransactionVersion = Exclude<TransactionVersion, 1>;
+
 export type TransactionInstructionInput = TransactionInstruction;
 
 type SignableTransactionMessage = Parameters<typeof signTransactionMessageWithSigners>[0];
@@ -70,7 +76,7 @@ type TransactionRecipeMetadata = Readonly<{
 	instructions: readonly TransactionInstruction[];
 	lifetime: BlockhashLifetime;
 	mode: 'partial' | 'send';
-	version: TransactionVersion;
+	version: SupportedTransactionVersion;
 }>;
 
 export type TransactionRecipe = TransactionRecipeMetadata &
@@ -93,7 +99,7 @@ export type TransactionPrepareRequest = Readonly<{
 	feePayer?: Address | string | TransactionSigner;
 	instructions: readonly TransactionInstruction[];
 	lifetime?: BlockhashLifetime;
-	version?: TransactionVersion | 'auto';
+	version?: SupportedTransactionVersion | 'auto';
 }>;
 
 export type TransactionPrepareAndSendRequest = TransactionPrepareRequest &
@@ -111,7 +117,7 @@ export type TransactionPrepared = Readonly<{
 	message: SignableTransactionMessage;
 	mode: 'partial' | 'send';
 	plan?: TransactionPlan;
-	version: TransactionVersion;
+	version: SupportedTransactionVersion;
 }>;
 
 export type TransactionSignOptions = Readonly<{
@@ -178,9 +184,9 @@ function instructionUsesAddressLookup(instruction: TransactionInstruction): bool
 }
 
 function resolveVersion(
-	requested: TransactionVersion | 'auto' | undefined,
+	requested: SupportedTransactionVersion | 'auto' | undefined,
 	instructions: readonly TransactionInstruction[],
-): TransactionVersion {
+): SupportedTransactionVersion {
 	if (requested && requested !== 'auto') {
 		return requested;
 	}

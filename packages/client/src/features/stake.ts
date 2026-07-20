@@ -22,7 +22,6 @@ import {
 	singleTransactionPlan,
 	type TransactionPlan,
 	type TransactionSigner,
-	type TransactionVersion,
 } from '@solana/kit';
 import {
 	getDeactivateInstruction,
@@ -36,6 +35,7 @@ import { lamportsMath } from '../numeric/lamports';
 import type { SolanaClientRuntime } from '../rpc/types';
 import { createWalletTransactionSigner, isWalletSession, resolveSignerMode } from '../signers/walletTransactionSigner';
 import type { WalletSession } from '../wallet/types';
+import type { SupportedTransactionVersion } from './transactions';
 
 /**
  * Blockhash and last valid block height for transaction lifetime.
@@ -150,7 +150,7 @@ export type StakePrepareConfig = Readonly<{
 	/** Optional pre-fetched blockhash lifetime. */
 	lifetime?: BlockhashLifetime;
 	/** Transaction version. Defaults to 0 (legacy). */
-	transactionVersion?: TransactionVersion;
+	transactionVersion?: SupportedTransactionVersion;
 	/** The validator's vote account address to delegate stake to. */
 	validatorId: Address | string;
 }>;
@@ -201,7 +201,7 @@ export type UnstakePrepareConfig = Readonly<{
 	/** The stake account address to deactivate. */
 	stakeAccount: Address | string;
 	/** Transaction version. Defaults to 0 (legacy). */
-	transactionVersion?: TransactionVersion;
+	transactionVersion?: SupportedTransactionVersion;
 }>;
 
 /** Options for sending unstake transactions. Same as StakeSendOptions. */
@@ -235,7 +235,7 @@ export type WithdrawPrepareConfig = Readonly<{
 	/** The stake account address to withdraw from. */
 	stakeAccount: Address | string;
 	/** Transaction version. Defaults to 0 (legacy). */
-	transactionVersion?: TransactionVersion;
+	transactionVersion?: SupportedTransactionVersion;
 }>;
 
 /** Options for sending withdrawal transactions. Same as StakeSendOptions. */
